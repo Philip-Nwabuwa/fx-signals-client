@@ -5,7 +5,7 @@ import { SignalsResponse } from "./types";
 import StatsCard from "./components/StatsCard";
 import SignalCard from "./components/SignalCard";
 
-const API_BASE_URL = "https://fx-signal-server-mk93.onrender.com";
+import { API_BASE_URL } from "./config";
 
 export default function AdminPage() {
   const [data, setData] = useState<SignalsResponse | null>(null);
@@ -39,11 +39,6 @@ export default function AdminPage() {
       setLoading(false);
     }
   };
-
-  // Fetch signals on mount
-  useEffect(() => {
-    fetchSignals();
-  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white p-4 md:p-8 font-sans selection:bg-white/20">
