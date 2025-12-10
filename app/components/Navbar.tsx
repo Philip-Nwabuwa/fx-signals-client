@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // Check for user in localStorage
+    // Check for user in cookies
     const checkUser = () => {
-      const storedUser = localStorage.getItem("user");
+      const storedUser = Cookies.get("user");
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       } else {
@@ -21,13 +22,13 @@ export default function Navbar() {
     checkUser();
 
     // Listen for storage events (in case of logout in another tab)
-    window.addEventListener("storage", checkUser);
-    return () => window.removeEventListener("storage", checkUser);
+    // Note: Cookies don't trigger storage events, so we might need a custom event or polling if needed.
+    // For now, we'll rely on page refreshes or navigation.
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    Cookies.remove("token");
+    Cookies.remove("user");
     setUser(null);
     window.location.href = "/login";
   };

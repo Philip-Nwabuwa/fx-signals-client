@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 import { API_BASE_URL } from "../config";
 
 export default function LoginPage() {
@@ -34,9 +35,9 @@ export default function LoginPage() {
         throw new Error(data.message || "Something went wrong");
       }
 
-      // Store token
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data));
+      // Store token in cookie
+      Cookies.set("token", data.token, { expires: 30 }); // Expires in 30 days
+      Cookies.set("user", JSON.stringify(data), { expires: 30 });
 
       // Redirect to home
       router.push("/");
