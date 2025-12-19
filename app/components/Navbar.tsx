@@ -2,35 +2,54 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Cookies from "js-cookie";
+import { API_BASE_URL } from "../config";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
-    // Check for user in cookies
+    // Check for user in cookies whenever pathname changes
     const checkUser = () => {
       const storedUser = Cookies.get("user");
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch {
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
     };
 
     checkUser();
+  }, [pathname]); // Re-run when pathname changes
 
-    // Listen for storage events (in case of logout in another tab)
-    // Note: Cookies don't trigger storage events, so we might need a custom event or polling if needed.
-    // For now, we'll rely on page refreshes or navigation.
-  }, []);
-
-  const handleLogout = () => {
-    Cookies.remove("token");
-    Cookies.remove("user");
-    setUser(null);
-    window.location.href = "/login";
+  const handleLogout = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (token) {
+        // Call server to blacklist the token
+        await fetch(`${API_BASE_URL}/api/auth/logout`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // Always clear cookies and redirect
+      Cookies.remove("token");
+      Cookies.remove("user");
+      setUser(null);
+      window.location.href = "/login";
+    }
   };
 
   return (

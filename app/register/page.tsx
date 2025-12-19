@@ -10,7 +10,6 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    password: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -93,22 +92,6 @@ export default function RegisterPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              required
-              className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-            />
-          </div>
-
           <button
             type="submit"
             disabled={loading}
@@ -117,6 +100,10 @@ export default function RegisterPage() {
             {loading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
+
+        <div className="mt-4 text-center text-xs text-gray-500">
+          Your account will need admin approval before you can log in.
+        </div>
 
         <div className="mt-6 text-center text-sm text-gray-400">
           Already have an account?{" "}
