@@ -116,6 +116,16 @@ export default function Navbar() {
               <span className="text-red-700 font-bold">FX Daily News</span>
             </a>
           )}
+          {user && (
+            <a
+              href="https://www.tradingview.com/markets/currencies/news/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:flex text-sm text-gray-400 hover:text-white transition-colors items-center gap-2 px-4 py-2 rounded-full bg-white hover:bg-white/10 border border-white/5"
+            >
+              <span className="text-red-700 font-bold">TradingView News</span>
+            </a>
+          )}
 
           {/* Auth Buttons Desktop */}
           <div className="hidden md:flex items-center gap-3">
