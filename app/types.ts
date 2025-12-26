@@ -1,6 +1,7 @@
 // Type definitions for FX Signals Admin Panel
 
 export interface Signal {
+  _id?: string;
   pair: string;
   direction: "BUY" | "SELL" | "HOLD";
   confidence: number;
@@ -12,6 +13,15 @@ export interface Signal {
   };
   riskAssessment?: {
     riskRewardRatio: number | null;
+  };
+  screenshot?: {
+    url: string;
+    publicId: string;
+    isApproved: boolean;
+    submittedAt?: string;
+    approvedAt?: string;
+    approvedBy?: string;
+    rejectionReason?: string;
   };
   reasoning?: string[];
   timestamp?: string;

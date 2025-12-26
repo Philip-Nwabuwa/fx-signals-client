@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Signal } from "../types";
 
 interface SignalCardProps {
@@ -16,7 +17,10 @@ export default function SignalCard({ signal, index }: SignalCardProps) {
   const confidencePercent = Math.round(signal.confidence * 100);
 
   return (
-    <div className="group relative rounded-3xl bg-zinc-900/50 border border-white/5 hover:border-white/10 transition-all duration-300 hover:shadow-2xl hover:shadow-black/50 overflow-hidden">
+    <Link
+      href={`/signals/${signal._id}`}
+      className="block group relative rounded-3xl bg-zinc-900/50 border border-white/5 hover:border-white/10 transition-all duration-300 hover:shadow-2xl hover:shadow-black/50 overflow-hidden cursor-pointer"
+    >
       {/* Decorative gradient blob */}
       <div
         className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity duration-500 ${
@@ -119,7 +123,7 @@ export default function SignalCard({ signal, index }: SignalCardProps) {
           )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

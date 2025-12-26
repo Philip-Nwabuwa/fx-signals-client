@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { SignalsResponse } from "./types";
+import { useState, useEffect, useMemo } from "react";
+import { SignalsResponse, Signal } from "./types";
 import StatsCard from "./components/StatsCard";
 import SignalCard from "./components/SignalCard";
 
@@ -11,6 +11,37 @@ export default function AdminPage() {
   const [data, setData] = useState<SignalsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"approved" | "pending">(
+    "approved"
+  );
+
+  // Filter signals by screenshot approval status
+  const approvedSignals = useMemo(() => {
+    if (!data?.signals) return [];
+    // Only signals with valid screenshots AND approved status
+    return data.signals.filter(
+      (signal) =>
+        signal.screenshot?.url && signal.screenshot.isApproved === true
+    );
+  }, [data?.signals]);
+
+  const pendingSignals = useMemo(() => {
+    if (!data?.signals) return [];
+    // Only signals with valid screenshots AND pending status
+    return data.signals.filter(
+      (signal) =>
+        signal.screenshot?.url && signal.screenshot.isApproved === false
+    );
+  }, [data?.signals]);
+
+  const signalsWithoutScreenshots = useMemo(() => {
+    if (!data?.signals) return [];
+    // Signals that don't have a valid screenshot submitted
+    return data.signals.filter((signal) => !signal.screenshot?.url);
+  }, [data?.signals]);
+
+  const currentSignals =
+    activeTab === "approved" ? approvedSignals : pendingSignals;
 
   const fetchSignals = async () => {
     setLoading(true);
@@ -39,6 +70,11 @@ export default function AdminPage() {
       setLoading(false);
     }
   };
+
+  // Auto-fetch signals on mount
+  useEffect(() => {
+    fetchSignals();
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white p-4 md:p-8 font-sans selection:bg-white/20">
@@ -179,33 +215,93 @@ export default function AdminPage() {
               )}
             </div>
 
-            {/* Signals Grid */}
+            {/* Signals Grid with Tabs */}
             <div>
               <div className="flex items-center gap-4 mb-8">
                 <div className="h-8 w-1 bg-white rounded-full"></div>
                 <h2 className="text-3xl font-bold text-white tracking-tight">
-                  Top 5 Refined Signals
+                  Trading Signals
                 </h2>
-                <span className="px-3 py-1 rounded-full bg-white/10 text-xs font-medium text-gray-400 border border-white/5">
-                  AI Selected
-                </span>
               </div>
 
-              {data.signals.length === 0 ? (
+              {/* Tabs */}
+              <div className="flex gap-4 mb-6">
+                <TabButton
+                  active={activeTab === "approved"}
+                  onClick={() => setActiveTab("approved")}
+                  label="Approved Signals"
+                  count={approvedSignals.length}
+                />
+                <TabButton
+                  active={activeTab === "pending"}
+                  onClick={() => setActiveTab("pending")}
+                  label="Pending Review"
+                  count={pendingSignals.length}
+                />
+              </div>
+
+              {/* Display current tab signals */}
+              {currentSignals.length === 0 ? (
                 <div className="text-center py-20 rounded-3xl bg-zinc-900/30 border border-white/5 border-dashed">
                   <span className="text-6xl mb-6 block opacity-50">📭</span>
                   <p className="text-xl text-gray-500 font-light">
-                    No signals met the strict criteria for this session.
+                    {activeTab === "approved"
+                      ? "No approved signals yet."
+                      : "No pending signals."}
                   </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {data.signals.map((signal, index) => (
-                    <SignalCard key={index} signal={signal} index={index} />
+                  {currentSignals.map((signal, index) => (
+                    <div key={signal._id || index} className="relative">
+                      <SignalCard signal={signal} index={index} />
+                      {/* Screenshot status badge */}
+                      {signal.screenshot && (
+                        <div className="absolute top-4 right-4 z-10">
+                          <div
+                            className={`px-3 py-1 text-xs rounded-full border backdrop-blur-sm ${
+                              signal.screenshot.isApproved
+                                ? "bg-green-500/20 border-green-500/40 text-green-300"
+                                : "bg-yellow-500/20 border-yellow-500/40 text-yellow-300"
+                            }`}
+                          >
+                            📸{" "}
+                            {signal.screenshot.isApproved
+                              ? "Verified"
+                              : "Pending"}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               )}
             </div>
+
+            {/* Signals without screenshots */}
+            {signalsWithoutScreenshots.length > 0 && (
+              <div className="mt-12">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="h-8 w-1 bg-gray-500 rounded-full"></div>
+                  <h2 className="text-3xl font-bold text-white tracking-tight">
+                    All Signals
+                  </h2>
+                  <span className="px-3 py-1 rounded-full bg-gray-500/10 text-xs font-medium text-gray-400 border border-gray-500/10">
+                    {signalsWithoutScreenshots.length} Signals
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {signalsWithoutScreenshots.map((signal, index) => (
+                    <SignalCard
+                      key={signal._id || index}
+                      signal={signal}
+                      index={index}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Filtering Summary */}
             {data.filteringSummary &&
@@ -246,6 +342,38 @@ export default function AdminPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  label,
+  count,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  count: number;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-6 py-3 rounded-xl font-medium transition-all ${
+        active
+          ? "bg-white text-black"
+          : "bg-white/5 text-gray-400 hover:bg-white/10"
+      }`}
+    >
+      {label}
+      <span
+        className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+          active ? "bg-black/10" : "bg-white/10"
+        }`}
+      >
+        {count}
+      </span>
+    </button>
   );
 }
 

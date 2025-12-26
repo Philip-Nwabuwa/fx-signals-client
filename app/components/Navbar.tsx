@@ -52,9 +52,41 @@ export default function Navbar() {
     }
   };
 
+  // Generate Forex Factory calendar URL with dynamic date range (10 days behind current day)
+  const getCalendarUrl = () => {
+    const today = new Date();
+    const tenDaysAgo = new Date(today);
+    tenDaysAgo.setDate(today.getDate() - 10);
+
+    const formatDate = (date: Date) => {
+      const months = [
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "oct",
+        "nov",
+        "dec",
+      ];
+      const month = months[date.getMonth()];
+      const day = date.getDate();
+      const year = date.getFullYear();
+      return `${month}${day}.${year}`;
+    };
+
+    const startDate = formatDate(tenDaysAgo);
+    const endDate = formatDate(today);
+    return `https://www.forexfactory.com/calendar?range=${startDate}-${endDate}`;
+  };
+
   return (
     <nav className="w-full border-b border-white/10 bg-black/50 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+      <div className="mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link
             href="/"
@@ -63,24 +95,27 @@ export default function Navbar() {
             FX Signals
           </Link>
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-6">
-            <NavLink href="/?category=fiat">Fiat</NavLink>
-            <NavLink href="/?category=crypto">Crypto</NavLink>
-            <NavLink href="/?category=gold">Gold</NavLink>
-            <NavLink href="/?category=stocks">Stocks</NavLink>
-          </div>
+          {user && (
+            <div className="hidden md:flex items-center gap-6">
+              <NavLink href="/?category=fiat">Fiat</NavLink>
+              <NavLink href="/?category=crypto">Crypto</NavLink>
+              <NavLink href="/?category=gold">Gold</NavLink>
+              <NavLink href="/?category=stocks">Stocks</NavLink>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
-          <a
-            href="https://www.forexfactory.com/calendar?range=dec6.2025-dec16.2025"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden lg:flex text-sm text-gray-400 hover:text-white transition-colors items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/5"
-          >
-            <span>📅</span>
-            <span>Calendar</span>
-          </a>
+          {user && (
+            <a
+              href={getCalendarUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:flex text-sm text-gray-400 hover:text-white transition-colors items-center gap-2 px-4 py-2 rounded-full bg-white hover:bg-white/10 border border-white/5"
+            >
+              <span className="text-red-700 font-bold">FX Daily News</span>
+            </a>
+          )}
 
           {/* Auth Buttons Desktop */}
           <div className="hidden md:flex items-center gap-3">
@@ -157,32 +192,36 @@ export default function Navbar() {
       {/* Mobile Menu Overlay */}
       {isOpen && (
         <div className="md:hidden border-t border-white/10 bg-black/95 backdrop-blur-xl absolute w-full left-0 top-16 p-4 flex flex-col gap-4 animate-in slide-in-from-top-2">
-          <MobileNavLink
-            href="/?category=fiat"
-            onClick={() => setIsOpen(false)}
-          >
-            Fiat
-          </MobileNavLink>
-          <MobileNavLink
-            href="/?category=crypto"
-            onClick={() => setIsOpen(false)}
-          >
-            Crypto
-          </MobileNavLink>
-          <MobileNavLink
-            href="/?category=gold"
-            onClick={() => setIsOpen(false)}
-          >
-            Gold
-          </MobileNavLink>
-          <MobileNavLink
-            href="/?category=stocks"
-            onClick={() => setIsOpen(false)}
-          >
-            Stocks
-          </MobileNavLink>
+          {user && (
+            <>
+              <MobileNavLink
+                href="/?category=fiat"
+                onClick={() => setIsOpen(false)}
+              >
+                Fiat
+              </MobileNavLink>
+              <MobileNavLink
+                href="/?category=crypto"
+                onClick={() => setIsOpen(false)}
+              >
+                Crypto
+              </MobileNavLink>
+              <MobileNavLink
+                href="/?category=gold"
+                onClick={() => setIsOpen(false)}
+              >
+                Gold
+              </MobileNavLink>
+              <MobileNavLink
+                href="/?category=stocks"
+                onClick={() => setIsOpen(false)}
+              >
+                Stocks
+              </MobileNavLink>
 
-          <hr className="border-white/10" />
+              <hr className="border-white/10" />
+            </>
+          )}
 
           {user ? (
             <>
@@ -210,18 +249,20 @@ export default function Navbar() {
             </>
           )}
 
-          <hr className="border-white/10" />
+          {user && <hr className="border-white/10" />}
 
-          <a
-            href="https://www.forexfactory.com/calendar?range=dec6.2025-dec16.2025"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-white transition-colors px-4 py-3 rounded-lg hover:bg-white/5"
-            onClick={() => setIsOpen(false)}
-          >
-            <span>📅</span>
-            <span>Economic Calendar</span>
-          </a>
+          {user && (
+            <a
+              href={getCalendarUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-white transition-colors px-4 py-3 rounded-lg hover:bg-white/5"
+              onClick={() => setIsOpen(false)}
+            >
+              <span>📅</span>
+              <span>Economic Calendar</span>
+            </a>
+          )}
         </div>
       )}
     </nav>
